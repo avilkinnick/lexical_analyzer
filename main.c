@@ -2,6 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MAX_BUFFER_SIZE 128
+
+typedef enum BufferState
+{
+    BUFFER_STATE_INITIAL,
+    BUFFER_STATE_SEPARATOR,
+    BUFFER_STATE_DIGIT,
+    BUFFER_STATE_IDENTIFIER,
+    BUFFER_STATE_INVALID
+} BufferState;
+
 // C language keywords (relevant for C17 standard)
 static const char* const KEYWORDS[] = {
     "auto",     "break",   "case",     "char",    "const",
@@ -19,8 +30,17 @@ static int is_digit(const char ch);
 static int is_uppercase_letter(const char ch);
 static int is_lowercase_letter(const char ch);
 
+FILE* file = NULL;
+char buffer[MAX_BUFFER_SIZE] = "";
+int buffer_length = 0;
+BufferState buffer_state = BUFFER_STATE_INITIAL;
+
+static void cleanup(void);
+
 int main(int argc, char* argv[])
 {
+    atexit(cleanup);
+
     if (argc != 2)
     {
         fputs("Valid usage:\n", stderr);
@@ -30,14 +50,18 @@ int main(int argc, char* argv[])
 
     const char* const absolute_source_file_path = argv[1];
 
-    FILE* const file = fopen(absolute_source_file_path, "r");
+    file = fopen(absolute_source_file_path, "r");
     if (file == NULL)
     {
         fprintf(stderr, "Failed to open %s\n", absolute_source_file_path);
         return EXIT_FAILURE;
     }
 
-    fclose(file);
+    char ch;
+    while (fscanf(file, "%c", &ch) != EOF)
+    {
+
+    }
 
     return EXIT_SUCCESS;
 }
@@ -89,4 +113,12 @@ static int is_uppercase_letter(const char ch)
 static int is_lowercase_letter(const char ch)
 {
     return ch >= 'a' && ch <= 'z';
+}
+
+static void cleanup(void)
+{
+    if (file != NULL)
+    {
+        fclose(file);
+    }
 }
